@@ -21,6 +21,9 @@ An advanced deep learning model for recognizing 50 Indian Sign Language (ISL) ge
 - **Top-3 Predictions with Confidence Scores**
 - **MobileNetV2 + Transformer + BiLSTM Architecture**
 - **96x96 Image Size, 12 Frames per Video**
+  
+## Dataset Link
+https://drive.google.com/file/d/1rNXT8P6IkCt-rDya88kGS6xuTSg6eiJ0/view?usp=sharing
 
 ## 📊 Model Architecture
 
