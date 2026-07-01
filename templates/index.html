@@ -1,0 +1,550 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>🤟 SignBERT - ISL Recognition</title>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap');
+        
+        * { 
+            margin: 0; 
+            padding: 0; 
+            box-sizing: border-box; 
+        }
+        
+        body {
+            font-family: 'Poppins', sans-serif;
+            background: linear-gradient(135deg, #0f2027 0%, #203a43 50%, #2c5364 100%);
+            min-height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            padding: 20px;
+            position: relative;
+            overflow-x: hidden;
+        }
+        
+        /* Animated background particles */
+        body::before {
+            content: '';
+            position: absolute;
+            width: 100%;
+            height: 100%;
+            background: radial-gradient(circle at 20% 50%, rgba(59, 130, 246, 0.1) 0%, transparent 50%),
+                        radial-gradient(circle at 80% 80%, rgba(147, 51, 234, 0.1) 0%, transparent 50%);
+            animation: pulse 8s ease-in-out infinite;
+        }
+        
+        @keyframes pulse {
+            0%, 100% { opacity: 0.5; }
+            50% { opacity: 1; }
+        }
+        
+        .container {
+            background: rgba(255, 255, 255, 0.05);
+            backdrop-filter: blur(20px);
+            -webkit-backdrop-filter: blur(20px);
+            border-radius: 30px;
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            box-shadow: 0 8px 32px 0 rgba(31, 38, 135, 0.37);
+            max-width: 1000px;
+            width: 100%;
+            padding: 50px 60px;
+            position: relative;
+            z-index: 1;
+            margin: 40px auto;
+        }
+        
+        h1 {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+            text-align: center;
+            margin-bottom: 10px;
+            font-size: 2.8em;
+            font-weight: 700;
+            text-shadow: 0 0 30px rgba(102, 126, 234, 0.5);
+        }
+        
+        .subtitle {
+            text-align: center;
+            color: rgba(255, 255, 255, 0.8);
+            margin-bottom: 15px;
+            font-size: 1.05em;
+            font-weight: 300;
+        }
+        
+        .badge {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 12px 30px;
+            border-radius: 30px;
+            display: inline-block;
+            font-size: 1em;
+            font-weight: 600;
+            margin-bottom: 30px;
+            box-shadow: 0 4px 15px rgba(102, 126, 234, 0.4);
+            animation: glow 2s ease-in-out infinite;
+        }
+        
+        @keyframes glow {
+            0%, 100% { box-shadow: 0 4px 15px rgba(102, 126, 234, 0.4); }
+            50% { box-shadow: 0 4px 25px rgba(102, 126, 234, 0.8); }
+        }
+        
+        .upload-area {
+            background: rgba(255, 255, 255, 0.03);
+            border: 2px dashed rgba(102, 126, 234, 0.5);
+            border-radius: 20px;
+            padding: 50px;
+            text-align: center;
+            margin-bottom: 25px;
+            transition: all 0.3s ease;
+            cursor: pointer;
+            backdrop-filter: blur(10px);
+        }
+        
+        .upload-area:hover {
+            background: rgba(102, 126, 234, 0.1);
+            border-color: #667eea;
+            transform: translateY(-5px);
+            box-shadow: 0 10px 30px rgba(102, 126, 234, 0.3);
+        }
+        
+        .upload-area.dragover {
+            background: rgba(102, 126, 234, 0.15);
+            border-color: #764ba2;
+            transform: scale(1.02);
+        }
+        
+        input[type="file"] {
+            display: none;
+        }
+        
+        .upload-icon {
+            font-size: 4em;
+            margin-bottom: 15px;
+            filter: drop-shadow(0 0 10px rgba(102, 126, 234, 0.5));
+        }
+        
+        .upload-text {
+            color: rgba(255, 255, 255, 0.9);
+            font-size: 1.2em;
+            font-weight: 500;
+            margin-bottom: 10px;
+        }
+        
+        .upload-subtext {
+            color: rgba(255, 255, 255, 0.5);
+            font-size: 1em;
+            margin-top: 15px;
+        }
+        
+        .btn {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            border: none;
+            padding: 18px 50px;
+            border-radius: 15px;
+            font-size: 1.2em;
+            cursor: pointer;
+            width: 100%;
+            transition: all 0.3s ease;
+            font-weight: 600;
+            box-shadow: 0 8px 25px rgba(102, 126, 234, 0.4);
+            position: relative;
+            overflow: hidden;
+        }
+        
+        .btn::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: -100%;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(90deg, transparent, rgba(255,255,255,0.3), transparent);
+            transition: left 0.5s;
+        }
+        
+        .btn:hover::before {
+            left: 100%;
+        }
+        
+        .btn:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 12px 35px rgba(102, 126, 234, 0.6);
+        }
+        
+        .btn:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+            transform: none;
+        }
+        
+        .result {
+            margin-top: 35px;
+            padding: 35px;
+            border-radius: 20px;
+            display: none;
+            backdrop-filter: blur(10px);
+            animation: slideIn 0.5s ease;
+        }
+        
+        @keyframes slideIn {
+            from {
+                opacity: 0;
+                transform: translateY(20px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+        
+        .result.success {
+            background: rgba(34, 197, 94, 0.1);
+            border: 2px solid rgba(34, 197, 94, 0.5);
+        }
+        
+        .result.warning {
+            background: rgba(251, 191, 36, 0.1);
+            border: 2px solid rgba(251, 191, 36, 0.5);
+        }
+        
+        .result.error {
+            background: rgba(239, 68, 68, 0.1);
+            border: 2px solid rgba(239, 68, 68, 0.5);
+        }
+        
+        .result-title {
+            font-size: 1.8em;
+            font-weight: 700;
+            margin-bottom: 25px;
+            text-align: center;
+            color: rgba(255, 255, 255, 0.95);
+        }
+        
+        .result-item {
+            display: flex;
+            justify-content: space-between;
+            padding: 15px 0;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+        }
+        
+        .result-item:last-child {
+            border-bottom: none;
+        }
+        
+        .result-label {
+            font-weight: 600;
+            color: rgba(255, 255, 255, 0.7);
+            font-size: 1.05em;
+        }
+        
+        .result-value {
+            color: rgba(255, 255, 255, 0.95);
+            font-size: 1.15em;
+            font-weight: 600;
+        }
+        
+        .top-predictions {
+            margin-top: 30px;
+            padding: 25px;
+            background: rgba(102, 126, 234, 0.1);
+            border-radius: 15px;
+            border: 1px solid rgba(102, 126, 234, 0.3);
+        }
+        
+        .top-predictions h3 {
+            color: #667eea;
+            margin-bottom: 20px;
+            font-size: 1.3em;
+            font-weight: 600;
+        }
+        
+        .prediction-item {
+            display: flex;
+            justify-content: space-between;
+            padding: 12px 0;
+            border-bottom: 1px solid rgba(102, 126, 234, 0.2);
+            color: rgba(255, 255, 255, 0.9);
+        }
+        
+        .prediction-item:last-child {
+            border-bottom: none;
+        }
+        
+        .loader {
+            border: 6px solid rgba(255, 255, 255, 0.1);
+            border-top: 6px solid #667eea;
+            border-radius: 50%;
+            width: 60px;
+            height: 60px;
+            animation: spin 1s linear infinite;
+            margin: 30px auto;
+            display: none;
+        }
+        
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+        
+        .file-name {
+            margin-top: 20px;
+            color: #667eea;
+            font-weight: 600;
+            font-size: 1.1em;
+            text-shadow: 0 0 10px rgba(102, 126, 234, 0.5);
+        }
+        
+        .supported-signs {
+            background: rgba(255, 255, 255, 0.03);
+            backdrop-filter: blur(10px);
+            padding: 25px;
+            border-radius: 20px;
+            margin-top: 30px;
+            font-size: 0.95em;
+            color: rgba(255, 255, 255, 0.8);
+            max-height: 300px;
+            overflow-y: auto;
+            border: 1px solid rgba(255, 255, 255, 0.1);
+        }
+        
+        .supported-signs::-webkit-scrollbar {
+            width: 8px;
+        }
+        
+        .supported-signs::-webkit-scrollbar-track {
+            background: rgba(255, 255, 255, 0.05);
+            border-radius: 10px;
+        }
+        
+        .supported-signs::-webkit-scrollbar-thumb {
+            background: rgba(102, 126, 234, 0.5);
+            border-radius: 10px;
+        }
+        
+        .supported-signs strong {
+            color: #667eea;
+            display: block;
+            margin-bottom: 20px;
+            font-size: 1.2em;
+            font-weight: 600;
+        }
+        
+        .sign-list {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+            gap: 10px;
+            font-size: 0.9em;
+        }
+        
+        .sign-item {
+            padding: 10px 15px;
+            background: rgba(102, 126, 234, 0.1);
+            border-radius: 10px;
+            border: 1px solid rgba(102, 126, 234, 0.2);
+            transition: all 0.3s ease;
+        }
+        
+        .sign-item:hover {
+            background: rgba(102, 126, 234, 0.2);
+            transform: translateX(5px);
+        }
+        
+        /* Responsive */
+        @media (max-width: 768px) {
+            .container {
+                padding: 30px;
+                max-width: 95%;
+            }
+            h1 {
+                font-size: 2em;
+            }
+            .upload-area {
+                padding: 40px 20px;
+            }
+            .sign-list {
+                grid-template-columns: 1fr;
+            }
+        }
+        
+        @media (min-width: 1400px) {
+            .container {
+                max-width: 1100px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>🤟 SignBERT</h1>
+        <p class="subtitle">Indian Sign Language Recognition System</p>
+        <div style="text-align: center;">
+            <span class="badge">50 Classes Model</span>
+        </div>
+        
+        <div class="upload-area" id="uploadArea">
+            <div class="upload-icon">📹</div>
+            <p class="upload-text"><strong>Click to upload</strong> or drag and drop</p>
+            <p class="upload-subtext">MP4, AVI, MOV (Max 50MB)</p>
+            <input type="file" id="videoInput" accept="video/*">
+            <div class="file-name" id="fileName"></div>
+        </div>
+        
+        <button class="btn" id="predictBtn" disabled>🚀 Predict Sign</button>
+        
+        <div class="loader" id="loader"></div>
+        
+        <div class="result" id="result">
+            <div class="result-title" id="resultTitle">🎯 Prediction Result</div>
+            <div class="result-item">
+                <span class="result-label">Sign Name:</span>
+                <span class="result-value" id="signName">--</span>
+            </div>
+            <div class="result-item">
+                <span class="result-label">Confidence:</span>
+                <span class="result-value" id="confidence">--</span>
+            </div>
+            <div class="result-item">
+                <span class="result-label">Status:</span>
+                <span class="result-value" id="status">--</span>
+            </div>
+            
+            <div class="top-predictions" id="topPredictions" style="display: none;">
+                <h3>📊 Top 3 Predictions</h3>
+                <div id="top3List"></div>
+            </div>
+        </div>
+
+        <div class="supported-signs">
+            <strong>✨ Supported Signs (50 Classes)</strong>
+            <div class="sign-list" id="signList">
+                <div class="sign-item">Loading...</div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        const uploadArea = document.getElementById('uploadArea');
+        const videoInput = document.getElementById('videoInput');
+        const fileName = document.getElementById('fileName');
+        const predictBtn = document.getElementById('predictBtn');
+        const loader = document.getElementById('loader');
+        const result = document.getElementById('result');
+        let selectedFile = null;
+
+        // Load supported classes
+        fetch('/classes')
+            .then(res => res.json())
+            .then(data => {
+                const signList = document.getElementById('signList');
+                signList.innerHTML = data.classes.map(cls => 
+                    `<div class="sign-item">• ${cls}</div>`
+                ).join('');
+            })
+            .catch(err => console.error('Error loading classes:', err));
+
+        uploadArea.addEventListener('click', () => videoInput.click());
+
+        uploadArea.addEventListener('dragover', (e) => {
+            e.preventDefault();
+            uploadArea.classList.add('dragover');
+        });
+
+        uploadArea.addEventListener('dragleave', () => {
+            uploadArea.classList.remove('dragover');
+        });
+
+        uploadArea.addEventListener('drop', (e) => {
+            e.preventDefault();
+            uploadArea.classList.remove('dragover');
+            const files = e.dataTransfer.files;
+            if (files.length > 0) {
+                handleFile(files[0]);
+            }
+        });
+
+        videoInput.addEventListener('change', (e) => {
+            if (e.target.files.length > 0) {
+                handleFile(e.target.files[0]);
+            }
+        });
+
+        function handleFile(file) {
+            if (!file.type.startsWith('video/')) {
+                alert('Please upload a video file');
+                return;
+            }
+            selectedFile = file;
+            fileName.textContent = `📁 ${file.name}`;
+            predictBtn.disabled = false;
+            result.style.display = 'none';
+        }
+
+        predictBtn.addEventListener('click', async () => {
+            if (!selectedFile) return;
+
+            predictBtn.disabled = true;
+            loader.style.display = 'block';
+            result.style.display = 'none';
+
+            const formData = new FormData();
+            formData.append('video', selectedFile);
+
+            try {
+                const response = await fetch('/predict', {
+                    method: 'POST',
+                    body: formData
+                });
+
+                const data = await response.json();
+
+                if (response.ok) {
+                    document.getElementById('signName').textContent = data.sign_name;
+                    document.getElementById('confidence').textContent = data.confidence;
+                    document.getElementById('status').textContent = data.status === 'confident' ? '✅ Confident' : '⚠️ Low Confidence';
+                    
+                    // Show top 3 predictions
+                    if (data.top_3) {
+                        const top3List = document.getElementById('top3List');
+                        top3List.innerHTML = data.top_3.map((pred, idx) => `
+                            <div class="prediction-item">
+                                <span>${idx + 1}. ${pred.class}</span>
+                                <span>${pred.confidence.toFixed(1)}%</span>
+                            </div>
+                        `).join('');
+                        document.getElementById('topPredictions').style.display = 'block';
+                    }
+                    
+                    result.className = 'result ' + (data.status === 'confident' ? 'success' : 'warning');
+                    result.style.display = 'block';
+                } else {
+                    document.getElementById('resultTitle').textContent = '❌ Error';
+                    document.getElementById('signName').textContent = data.error;
+                    document.getElementById('confidence').textContent = '--';
+                    document.getElementById('status').textContent = '--';
+                    document.getElementById('topPredictions').style.display = 'none';
+                    result.className = 'result error';
+                    result.style.display = 'block';
+                }
+            } catch (error) {
+                document.getElementById('resultTitle').textContent = '❌ Error';
+                document.getElementById('signName').textContent = 'Failed to process video';
+                document.getElementById('confidence').textContent = '--';
+                document.getElementById('status').textContent = '--';
+                document.getElementById('topPredictions').style.display = 'none';
+                result.className = 'result error';
+                result.style.display = 'block';
+            } finally {
+                loader.style.display = 'none';
+                predictBtn.disabled = false;
+            }
+        });
+    </script>
+</body>
+</html>
